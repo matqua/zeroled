@@ -103,9 +103,9 @@ The toolchain lives in a Docker image (`docker/Dockerfile`, Debian trixie to mat
 GCC 14/glibc). The only host requirement is Docker:
 
 ```shell
-tools/docker-build.sh                          # -> dist/zeroled_0.1.0_1_arm64.deb
+tools/docker-build.sh                          # -> dist/zeroled_0.1.1_1_arm64.deb
 tools/docker-build.sh bash                     # shell with cmake, the cross and desktop toolchains
-tools/docker-build.sh cmake -DPACKAGE_FILE=dist/zeroled_0.1.0_1_arm64.deb \
+tools/docker-build.sh cmake -DPACKAGE_FILE=dist/zeroled_0.1.1_1_arm64.deb \
     -P .agents/skills/cardputerzero-package-release/scripts/validate_app_builder.cmake
 REMOTE_USER=<user> REMOTE_HOST=<device-ip> ./deploy.sh   # uses Docker if cmake isn't installed
 ```

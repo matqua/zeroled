@@ -18,10 +18,12 @@
 #include "theme.h"
 #include "toast.h"
 
+#include <chrono>
 #include <cstdlib>
 #include <filesystem>
 #include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 
 #if USE_DESKTOP
@@ -54,6 +56,9 @@
 
 namespace app {
 namespace {
+
+// Upper bound on one main-loop sleep, so SDL events (desktop) and stray work stay responsive.
+constexpr uint32_t kMaxIdleMs = 33;
 
 void quit_requested_observer(lv_observer_t* observer, lv_subject_t* subject) {
     auto* running = static_cast<bool*>(lv_observer_get_user_data(observer));
@@ -545,8 +550,13 @@ int Application::run() {
            && simulator_frame.process_events()
 #endif
     ) {
-        lv_timer_handler();
-        lv_delay_ms(5);
+        // Sleep until the next LVGL timer is due. lv_delay_ms() busy-waits on the device,
+        // where no delay callback is registered, and would pin a CPU core.
+        uint32_t idle_ms = lv_timer_handler();
+        if (idle_ms == LV_NO_TIMER_READY || idle_ms > kMaxIdleMs) {
+            idle_ms = kMaxIdleMs;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(idle_ms > 0 ? idle_ms : 1));
     }
 
     view_model.stop_network();
